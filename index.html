@@ -1,184 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<!-- Metadata -->
-		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width"
-		/>
-		<meta name="mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
 
-		<!-- Judul pada tab browser -->
-		<title>LeafletJS</title>
+<head>
+	<!-- Metadata -->
+	<meta charset="utf-8" />
+	<meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width" />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
 
-		<!-- Leaflet CSS Library -->
-		<link
-			rel="stylesheet"
-			href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-		/>
+	<!-- Judul pada tab browser -->
+	<title>LeafletJS</title>
 
-		<!-- Style untuk tampilan peta fullscreen -->
-		<style>
-			html,
-			body,
-			#map {
-				height: 100%;
-				width: 100%;
-				margin: 0px;
+	<!-- Leaflet CSS Library -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+	<!-- Style untuk tampilan peta fullscreen -->
+	<style>
+		html,
+		body,
+		#map {
+			height: 100%;
+			width: 100%;
+			margin: 0px;
+		}
+
+		.info {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255, 255, 255, 0.8);
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+			border-radius: 5px;
+			color: black;
+		}
+
+		.info h2 {
+			margin: 0 0 5px;
+			color: rgb(75, 75, 75);
+		}
+	</style>
+</head>
+
+<body>
+	<!-- Leaflet JavaScript Library -->
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+	<!-- HTML Block untuk menampilkan peta -->
+	<div id="map"></div>
+	<script>
+		/* Initial Map */
+		var map = L.map("map").setView([-7.4726204, 110.2197571], 10); //lat, long, zoom
+
+		/* Tile Basemap */
+		var basemap = L.tileLayer(
+			"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+			{
+				//attribution akan muncul di pojok kanan bawah
+				attribution:
+					'<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | <a href="https://www.unsorry.net" target="_blank">unsorry@2022</a>',
 			}
-		</style>
-	</head>
+		);
+		basemap.addTo(map); //Memanggil basemap untuk ditampilkan ketika halaman dipanggil
 
-	<body>
-		<!-- Leaflet JavaScript Library -->
-		<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-		<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
-		<!-- HTML Block untuk menampilkan peta -->
-		<div id="map"></div>
-		<script>
-			/* Initial Map */
-			var map = L.map("map").setView([-7.4726204, 110.2197571], 10); //lat, long, zoom
-
-			/* Tile Basemap */
-			var basemap = L.tileLayer(
-				"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-				{
-					//attribution akan muncul di pojok kanan bawah
-					attribution:
-						'<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | <a href="https://www.unsorry.net" target="_blank">unsorry@2022</a>',
-				}
-			);
-			basemap.addTo(map); //Memanggil basemap untuk ditampilkan ketika halaman dipanggil
-
-			/* GeoJSON Polygon */
-			var batasdesamagelang = L.geoJson(null, {
-				/* Style polygon */
-				style: function (feature) {
-					//Fungsi style polygon
-					return {
-						fillColor: "white", //Warna tengah polygon
-						fillOpacity: 0.7, //Transparansi tengah polygon
-						color: "black", //Warna garis tepi polygon
-						weight: 1, //Tebal garis tepi polygon
-						opacity: 1, //Transparansi garis tepi polygon
-					};
-				},
-				/* Highlight & Popup */
-				onEachFeature: function (feature, layer) {
-					layer.on({
-						mouseover: function (e) {
-							//Fungsi ketika mouse berada di atas obyek
-							var layer = e.target; //variabel layer
-							layer.setStyle({
-								//Highlight style
-								weight: 2, //Tebal garis tepi polygon
-								color: "#00FFFF", //Warna garis tepi polygon
-								opacity: 1, //Transparansi garis tepi polygon
-								fillColor: "#00ffff", //Warna tengah polygon
-								fillOpacity: 0.5, //Transparansi tengah polygon
-							});
-						},
-						mouseout: function (e) {
-							//Fungsi ketika mouse keluar dari area obyek
-							batasdesamagelang.resetStyle(e.target); //Mengembalikan style polygon ke style awal
-							map.closePopup(); //Menutup popup
-						},
-						click: function (e) {
-							//Fungsi ketika obyek di-klik
-							batasdesamagelang.bindPopup(feature.properties.NAMOBJ); //Popup
-						},
-					});
-				},
-			});
-			/* memanggil data geojson polygon */
-			$.getJSON("data/ADMINISTRASIDESA_AR_25K.geojson", function (data) {
-				batasdesamagelang.addData(data);
-				map.addLayer(batasdesamagelang); //batasdesamagelang ditampilkan ketika halaman dipanggil
-				map.fitBounds(batasdesamagelang.getBounds());
-			});
-
-			/* GeoJSON Polyline */
-			var jalanutama = L.geoJson(null, {
-				/* Style polyline */
-				style: function (feature) {
-					//Fungsi style polyline
-					return {
-						color: "red", //Warna garis
-						weight: 2, //Tebal garis
-						opacity: 1, //Transparansi garis
-					};
-				},
-				/* Highlight & Popup */
-				onEachFeature: function (feature, layer) {
-					layer.on({
-						mouseover: function (e) {
-							//Fungsi ketika mouse berada di atas obyek
-							var layer = e.target; //variabel layer
-							layer.setStyle({
-								//Highlight style
-								weight: 2, //Tebal garis
-								color: "#00FFFF", //Warna garis
-								opacity: 1, //Transparansi garis
-							});
-						},
-						mouseout: function (e) {
-							//Fungsi ketika mouse keluar dari area obyek
-							jalanutama.resetStyle(e.target); //Mengembalikan style garis ke style awal
-							map.closePopup(); //Menutup popup
-						},
-						click: function (e) {
-							//Fungsi ketika obyek di-klik
-							var content = "Jenis: " + feature.properties.REMARK;
-							jalanutama.bindPopup(content); //Popup
-						},
-					});
-				},
-			});
-			/* memanggil data geojson polyline */
-			$.getJSON("data/jalan.geojson", function (data) {
-				jalanutama.addData(data);
-				map.addLayer(jalanutama); //jalanutama ditampilkan ketika halaman dipanggil
-			});
-
-			/* GeoJSON Point */
-			var pendidikan = L.geoJson(null, {
-				/* Popup */
-				onEachFeature: function (feature, layer) {
-					if (feature.properties) {
-						/* Variabel untuk memanggil atribut dari data geojson */
-
-						layer.on({
-							click: function (e) {
-								//Fungsi ketika icon simbol di-klik
-								pendidikan.bindPopup(feature.properties.REMARK);
-							},
+		/* GeoJSON Polygon */
+		var batasdesamagelang = L.geoJson(null, {
+			/* Style polygon */
+			style: function (feature) {
+				//Fungsi style polygon
+				return {
+					fillColor: "white", //Warna tengah polygon
+					fillOpacity: 0.7, //Transparansi tengah polygon
+					color: "black", //Warna garis tepi polygon
+					weight: 1, //Tebal garis tepi polygon
+					opacity: 1, //Transparansi garis tepi polygon
+				};
+			},
+			/* Highlight & Popup */
+			onEachFeature: function (feature, layer) {
+				layer.on({
+					mouseover: function (e) {
+						//Fungsi ketika mouse berada di atas obyek
+						var layer = e.target; //variabel layer
+						layer.setStyle({
+							//Highlight style
+							weight: 2, //Tebal garis tepi polygon
+							color: "#00FFFF", //Warna garis tepi polygon
+							opacity: 1, //Transparansi garis tepi polygon
+							fillColor: "#00ffff", //Warna tengah polygon
+							fillOpacity: 0.5, //Transparansi tengah polygon
 						});
-					}
-				},
-			});
-			/* memanggil data geojson point */
-			$.getJSON("data/pendidikan.geojson", function (data) {
-				pendidikan.addData(data);
-				map.addLayer(pendidikan); //pendidikan ditampilkan ketika halaman dipanggil
-			});
+					},
+					mouseout: function (e) {
+						//Fungsi ketika mouse keluar dari area obyek
+						batasdesamagelang.resetStyle(e.target); //Mengembalikan style polygon ke style awal
+						map.closePopup(); //Menutup popup
+					},
+					click: function (e) {
+						//Fungsi ketika obyek di-klik
+						batasdesamagelang.bindPopup(feature.properties.NAMOBJ); //Popup
+					},
+				});
+			},
+		});
+		/* memanggil data geojson polygon */
+		$.getJSON("data/ADMINISTRASIDESA_AR_25K.geojson", function (data) {
+			batasdesamagelang.addData(data);
+			map.addLayer(batasdesamagelang); //batasdesamagelang ditampilkan ketika halaman dipanggil
+			map.fitBounds(batasdesamagelang.getBounds());
+		});
 
-			var baseMaps = {
-				//list basemap
-				"Open Street Map": basemap,
-			};
-			var Layers = {
-				//list layer
-				"Pendidikan": pendidikan,
-				"Jalan Utama": jalanutama,
-				"Batas Desa Magelang": batasdesamagelang,
-			};
-			var layerControl = L.control.layers(baseMaps, Layers, {
-				collapsed: false,
-			});
-			layerControl.addTo(map);
-		</script>
-	</body>
+		/* GeoJSON Polyline */
+		var jalanutama = L.geoJson(null, {
+			/* Style polyline */
+			style: function (feature) {
+				//Fungsi style polyline
+				return {
+					color: "red", //Warna garis
+					weight: 2, //Tebal garis
+					opacity: 1, //Transparansi garis
+				};
+			},
+			/* Highlight & Popup */
+			onEachFeature: function (feature, layer) {
+				layer.on({
+					mouseover: function (e) {
+						//Fungsi ketika mouse berada di atas obyek
+						var layer = e.target; //variabel layer
+						layer.setStyle({
+							//Highlight style
+							weight: 2, //Tebal garis
+							color: "#00FFFF", //Warna garis
+							opacity: 1, //Transparansi garis
+						});
+					},
+					mouseout: function (e) {
+						//Fungsi ketika mouse keluar dari area obyek
+						jalanutama.resetStyle(e.target); //Mengembalikan style garis ke style awal
+						map.closePopup(); //Menutup popup
+					},
+					click: function (e) {
+						//Fungsi ketika obyek di-klik
+						var content = "Jenis: " + feature.properties.REMARK;
+						jalanutama.bindPopup(content); //Popup
+					},
+				});
+			},
+		});
+		/* memanggil data geojson polyline */
+		$.getJSON("data/jalan.geojson", function (data) {
+			jalanutama.addData(data);
+			map.addLayer(jalanutama); //jalanutama ditampilkan ketika halaman dipanggil
+		});
+
+		/* GeoJSON Point */
+		var pendidikan = L.geoJson(null, {
+			/* Popup */
+			onEachFeature: function (feature, layer) {
+				if (feature.properties) {
+					/* Variabel untuk memanggil atribut dari data geojson */
+
+					layer.on({
+						click: function (e) {
+							//Fungsi ketika icon simbol di-klik
+							pendidikan.bindPopup(feature.properties.REMARK);
+						},
+					});
+				}
+			},
+		});
+		/* memanggil data geojson point */
+		$.getJSON("data/pendidikan.geojson", function (data) {
+			pendidikan.addData(data);
+			map.addLayer(pendidikan); //pendidikan ditampilkan ketika halaman dipanggil
+		});
+
+		var title = new L.Control();
+		title.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info');
+			this.update();
+			return this._div;
+		};
+		title.update = function () {
+			this._div.innerHTML = '<h2>Peta Studio Kawasan</h2>Kota Magelang, Jawa Tengah'
+		};
+		title.addTo(map);
+
+		var baseMaps = {
+			//list basemap
+			"Open Street Map": basemap,
+		};
+		var Layers = {
+			//list layer
+			"Pendidikan": pendidikan,
+			"Jalan Utama": jalanutama,
+			"Batas Desa Magelang": batasdesamagelang,
+		};
+		var layerControl = L.control.layers(baseMaps, Layers, {
+			collapsed: false,
+		});
+		layerControl.addTo(map);
+
+		L.Control.Watermark = L.Control.extend({
+  onAdd: function(map) {
+    var img = L.DomUtil.create('img');
+    img.src = 'https://itny.ac.id/wp-content/uploads/2019/03/logo-itny21.png'; //Image URL
+    img.style.width = '300px'; //Image Size
+	img.style.background = "rgba(0,0,0,0.5)"; //Background Colour
+	img.style.padding = "5px"; //Padding
+    return img;
+  },
+  onRemove: function(map) {
+    // Nothing to do here
+  }
+});
+L.control.watermark = function(opts) {
+  return new L.Control.Watermark(opts);
+}
+L.control.watermark({ position: 'bottomleft' }).addTo(map);
+
+L.control.scale({
+  maxWidth: 150,
+  imperial: false,
+  position:"bottomright",
+}).addTo(map);
+	</script>
+</body>
+
 </html>
